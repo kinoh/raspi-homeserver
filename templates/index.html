@@ -10,6 +10,10 @@
 			margin: 1em;
 		}
 
+		#thumbnail img {
+			max-width: 100%;
+		}
+
 		#status {
 			font-family: monospace;
 			border: 1px solid #333;
@@ -38,6 +42,7 @@
 	</style>
 </head>
 <body>
+	<div id="thumbnail"></div>
 	<div id="status"></div>
 	<div class="control">
 		<input type="button" onclick="updateStatus()" value="update">
@@ -76,6 +81,7 @@
 				let dom = document.getElementById('status');
 				dom.innerHTML = '';
 				dom.appendChild(table);
+				showThumbnail();
 				appendMessage('ok');
 			});
 		}
@@ -154,6 +160,19 @@
 			});
 		}
 
+		function showThumbnail() {
+			let box = document.getElementById('thumbnail');
+			box.innerHTML = '';
+
+			let path = currentStatus.path;
+			if (!path) return;
+			let m = path.match(/(?:v=|\/)(\w+)$/);
+			if (!m) return;
+			let videoId = m[1];
+			let img = document.createElement('img');
+			img.src = `https://img.youtube.com/vi/${videoId}/0.jpg`;
+			box.appendChild(img);
+		}
 		function appendMessage(text) {
 			let t = new Date();
 			let box = document.getElementById('message');
