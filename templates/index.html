@@ -39,9 +39,13 @@
 		<input type="button" onclick="playUrlInClipboard()" value="play">
 		<input type="button" onclick="pause()" value="pause">
 		<input type="button" onclick="stop()" value="stop">
+		<input type="button" onclick="changeVolume(+10)" value="louder">
+		<input type="button" onclick="changeVolume(-10)" value="quieter">
 	</div>
 	<div id="message" onclick="clearMessage()"></div>
 	<script>
+
+		var currentStatus = {};
 
 		function updateStatus() {
 			fetch('/api/music/status', {
@@ -51,6 +55,7 @@
 				return response.json();
 			}).then(data => {
 				console.log(data);
+				currentStatus = data;
 				let table = document.createElement('table');
 				Object.keys(data).forEach(key => {
 					if (typeof(data[key]) === 'object') return;
@@ -67,7 +72,7 @@
 				dom.innerHTML = '';
 				dom.appendChild(table);
 				document.getElementById('message').innerText = 'ok';
-			})
+			});
 		}
 		function clearMessage() {
 			document.getElementById('message').innerText = '';
@@ -113,6 +118,26 @@
 				method: 'POST',
 				cache: 'no-cache',
 			}).then(response => {
+				return response.json();
+			}).then(data => {
+				console.log(data);
+				document.getElementById('message').innerText = (data.ok ? 'ok' : 'failed');
+			}).catch(e => {
+				console.error(e);
+				document.getElementById('message').innerText = e.message;
+			});
+		}
+		function changeVolume(diff) {
+			fetch('/api/music/volume', {
+					method: 'POST',
+					cache: 'no-cache',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						'volume': currentStatus.volume + diff,
+					}),
+				}).then(response => {
 				return response.json();
 			}).then(data => {
 				console.log(data);

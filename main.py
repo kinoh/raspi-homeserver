@@ -16,6 +16,11 @@ class MpvPlayer():
 	def stop(self):
 		self.mpv.stop()
 
+	def set_volume(self, value):
+		ranged = max(0, min(100, value))
+		self.mpv.volume = ranged
+		return ranged
+
 	def status(self):
 		return {
 			'title': self.mpv.media_title,
@@ -23,6 +28,7 @@ class MpvPlayer():
 			'duration': self.mpv.duration,
 			'codec': self.mpv.audio_codec,
 			'audio_params': self.mpv.audio_params,
+			'volume': self.mpv.volume,
 			't': self.mpv.time_pos,
 			'paused': self.mpv.pause,
 		}
@@ -54,6 +60,11 @@ def music_pause():
 @app.route('/api/music/stop', methods=['POST'])
 def music_stop():
 	player.stop()
+	return flask.jsonify({ 'ok': True })
+
+@app.route('/api/music/volume', methods=['POST'])
+def music_volume():
+	player.set_volume(flask.request.json['volume'])
 	return flask.jsonify({ 'ok': True })
 
 if __name__ == '__main__':
