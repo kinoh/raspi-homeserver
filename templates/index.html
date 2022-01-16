@@ -96,6 +96,7 @@
 			}).then(data => {
 				console.log(data);
 				appendMessage(data.ok ? 'ok' : 'failed');
+				updateStatus();
 			}).catch(e => {
 				console.error(e);
 				appendMessage(e.message);
@@ -110,6 +111,7 @@
 			}).then(data => {
 				console.log(data);
 				appendMessage(data.ok ? 'ok' : 'failed');
+				updateStatus();
 			}).catch(e => {
 				console.error(e);
 				appendMessage(e.message);
@@ -124,6 +126,7 @@
 			}).then(data => {
 				console.log(data);
 				appendMessage(data.ok ? 'ok' : 'failed');
+				updateStatus();
 			}).catch(e => {
 				console.error(e);
 				appendMessage(e.message);
@@ -144,6 +147,7 @@
 			}).then(data => {
 				console.log(data);
 				appendMessage(data.ok ? 'ok' : 'failed');
+				updateStatus();
 			}).catch(e => {
 				console.error(e);
 				appendMessage(e.message);
