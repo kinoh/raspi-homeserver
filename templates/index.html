@@ -30,6 +30,11 @@
 			padding: 0.3em 0.6em;
 		}
 
+		#message {
+			color: #666;
+			font-size: small;
+		}
+
 	</style>
 </head>
 <body>
@@ -71,11 +76,8 @@
 				let dom = document.getElementById('status');
 				dom.innerHTML = '';
 				dom.appendChild(table);
-				document.getElementById('message').innerText = 'ok';
+				appendMessage('ok');
 			});
-		}
-		function clearMessage() {
-			document.getElementById('message').innerText = '';
 		}
 		function playUrlInClipboard() {
 			navigator.clipboard.readText().then(text => {
@@ -93,10 +95,10 @@
 				return response.json();
 			}).then(data => {
 				console.log(data);
-				document.getElementById('message').innerText = (data.ok ? 'ok' : 'failed');
+				appendMessage(data.ok ? 'ok' : 'failed');
 			}).catch(e => {
 				console.error(e);
-				document.getElementById('message').innerText = e.message;
+				appendMessage(e.message);
 			});
 		}
 		function pause() {
@@ -107,10 +109,10 @@
 				return response.json();
 			}).then(data => {
 				console.log(data);
-				document.getElementById('message').innerText = (data.ok ? 'ok' : 'failed');
+				appendMessage(data.ok ? 'ok' : 'failed');
 			}).catch(e => {
 				console.error(e);
-				document.getElementById('message').innerText = e.message;
+				appendMessage(e.message);
 			});
 		}
 		function stop() {
@@ -121,10 +123,10 @@
 				return response.json();
 			}).then(data => {
 				console.log(data);
-				document.getElementById('message').innerText = (data.ok ? 'ok' : 'failed');
+				appendMessage(data.ok ? 'ok' : 'failed');
 			}).catch(e => {
 				console.error(e);
-				document.getElementById('message').innerText = e.message;
+				appendMessage(e.message);
 			});
 		}
 		function changeVolume(diff) {
@@ -141,11 +143,22 @@
 				return response.json();
 			}).then(data => {
 				console.log(data);
-				document.getElementById('message').innerText = (data.ok ? 'ok' : 'failed');
+				appendMessage(data.ok ? 'ok' : 'failed');
 			}).catch(e => {
 				console.error(e);
-				document.getElementById('message').innerText = e.message;
+				appendMessage(e.message);
 			});
+		}
+
+		function appendMessage(text) {
+			let t = new Date();
+			let box = document.getElementById('message');
+			let record = document.createElement('div');
+			record.innerText = `[${t.toLocaleDateString()} ${t.toLocaleTimeString()}] ${text}`;
+			box.insertBefore(record, box.firstChild);
+		}
+		function clearMessage() {
+			document.getElementById('message').innerText = '';
 		}
 
 		document.addEventListener('DOMContentLoaded', (e) => {
