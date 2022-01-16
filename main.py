@@ -34,24 +34,27 @@ app.config['JSON_AS_ASCII'] = False
 
 @app.route('/')
 def hello():
-	return 'hello!'
+	return flask.render_template('index.html')
 
-@app.route('/music/status', methods=['GET'])
+@app.route('/api/music/status', methods=['GET'])
 def music_status():
 	result = player.status()
 	return flask.jsonify(result)
 
-@app.route('/music/play', methods=['POST'])
+@app.route('/api/music/play', methods=['POST'])
 def music_play():
 	player.play(flask.request.json['url'])
 	return flask.jsonify({ 'ok': True })
 
-@app.route('/music/pause', methods=['POST'])
+@app.route('/api/music/pause', methods=['POST'])
 def music_pause():
 	result = player.pause()
-	return flask.jsonify({ 'paused': result })
+	return flask.jsonify({ 'ok': True, 'paused': result })
 
-@app.route('/music/stop', methods=['POST'])
+@app.route('/api/music/stop', methods=['POST'])
 def music_stop():
 	player.stop()
 	return flask.jsonify({ 'ok': True })
+
+if __name__ == '__main__':
+	app.run(host='0.0.0.0', port=443, ssl_context=('cert/server.crt', 'cert/server.key'), threaded=True, debug=True)

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>raspi</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<style>
+
+		body>div {
+			margin: 1em;
+		}
+
+		#status {
+			font-family: monospace;
+			border: 1px solid #333;
+		}
+		#status table {
+			margin: 0.2em;
+		}
+		#status tr {
+			height: 1.5em;
+		}
+		#status td:first-child {
+			width: 6em;
+		}
+
+		.control input {
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+			font-size: large;
+			padding: 0.3em 0.6em;
+		}
+
+	</style>
+</head>
+<body>
+	<div id="status"></div>
+	<div class="control">
+		<input type="button" onclick="updateStatus()" value="update">
+		<input type="button" onclick="playUrlInClipboard()" value="play">
+		<input type="button" onclick="pause()" value="pause">
+		<input type="button" onclick="stop()" value="stop">
+	</div>
+	<div id="message" onclick="clearMessage()"></div>
+	<script>
+
+		function updateStatus() {
+			fetch('/api/music/status', {
+				method: 'GET',
+				cache: 'no-cache',
+			}).then(response => {
+				return response.json();
+			}).then(data => {
+				console.log(data);
+				let table = document.createElement('table');
+				Object.keys(data).forEach(key => {
+					if (typeof(data[key]) === 'object') return;
+					let row = document.createElement('tr');
+					let keyCell = document.createElement('td');
+					keyCell.innerText = key;
+					row.appendChild(keyCell);
+					let valueCell = document.createElement('td');
+					valueCell.innerText = data[key];
+					row.appendChild(valueCell);
+					table.appendChild(row);
+				});
+				let dom = document.getElementById('status');
+				dom.innerHTML = '';
+				dom.appendChild(table);
+			})
+		}
+		function clearMessage() {
+			document.getElementById('message').innerText = '';
+		}
+		function playUrlInClipboard() {
+			navigator.clipboard.readText().then(text => {
+				return fetch('/api/music/play', {
+					method: 'POST',
+					cache: 'no-cache',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						'url': text,
+					}),
+				});
+			}).then(response => {
+				return response.json();
+			}).then(data => {
+				console.log(data);
+				document.getElementById('message').innerText = (data.ok ? 'ok' : 'failed');
+			}).catch(e => {
+				console.error(e);
+				document.getElementById('message').innerText = e.message;
+			});
+		}
+		function pause() {
+			fetch('/api/music/pause', {
+				method: 'POST',
+				cache: 'no-cache',
+			}).then(response => {
+				return response.json();
+			}).then(data => {
+				console.log(data);
+				document.getElementById('message').innerText = (data.ok ? 'ok' : 'failed');
+			}).catch(e => {
+				console.error(e);
+				document.getElementById('message').innerText = e.message;
+			});
+		}
+		function stop() {
+			fetch('/api/music/stop', {
+				method: 'POST',
+				cache: 'no-cache',
+			}).then(response => {
+				return response.json();
+			}).then(data => {
+				console.log(data);
+				document.getElementById('message').innerText = (data.ok ? 'ok' : 'failed');
+			}).catch(e => {
+				console.error(e);
+				document.getElementById('message').innerText = e.message;
+			});
+		}
+
+		document.addEventListener('DOMContentLoaded', (e) => {
+			updateStatus();
+		});
+
+	</script>
+</body>
+</html>
