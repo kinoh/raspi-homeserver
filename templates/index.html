@@ -166,7 +166,7 @@
 
 			let path = currentStatus.path;
 			if (!path) return;
-			let m = path.match(/(?:v=|\/)(\w+)$/);
+			let m = path.match(/(?:v=|\/)([\w\-_]+)$/);
 			if (!m) return;
 			let videoId = m[1];
 			let img = document.createElement('img');
