@@ -49,6 +49,9 @@
 		<input type="button" onclick="playUrlInClipboard()" value="play">
 		<input type="button" onclick="pause()" value="pause">
 		<input type="button" onclick="stop()" value="stop">
+		<input type="button" onclick="prev()" value="prev">
+		<input type="button" onclick="next()" value="next">
+		<input type="button" onclick="shuffle()" value="shuffle">
 		<input type="button" onclick="changeVolume(+10)" value="louder">
 		<input type="button" onclick="changeVolume(-10)" value="quieter">
 	</div>
@@ -125,6 +128,51 @@
 		}
 		function stop() {
 			fetch('/api/music/stop', {
+				method: 'POST',
+				cache: 'no-cache',
+			}).then(response => {
+				return response.json();
+			}).then(data => {
+				console.log(data);
+				appendMessage(data.ok ? 'ok' : 'failed');
+				updateStatus();
+			}).catch(e => {
+				console.error(e);
+				appendMessage(e.message);
+			});
+		}
+		function prev() {
+			fetch('/api/music/prev', {
+				method: 'POST',
+				cache: 'no-cache',
+			}).then(response => {
+				return response.json();
+			}).then(data => {
+				console.log(data);
+				appendMessage(data.ok ? 'ok' : 'failed');
+				updateStatus();
+			}).catch(e => {
+				console.error(e);
+				appendMessage(e.message);
+			});
+		}
+		function next() {
+			fetch('/api/music/next', {
+				method: 'POST',
+				cache: 'no-cache',
+			}).then(response => {
+				return response.json();
+			}).then(data => {
+				console.log(data);
+				appendMessage(data.ok ? 'ok' : 'failed');
+				updateStatus();
+			}).catch(e => {
+				console.error(e);
+				appendMessage(e.message);
+			});
+		}
+		function shuffle() {
+			fetch('/api/music/shuffle', {
 				method: 'POST',
 				cache: 'no-cache',
 			}).then(response => {

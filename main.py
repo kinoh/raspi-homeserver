@@ -16,6 +16,15 @@ class MpvPlayer():
 	def stop(self):
 		self.mpv.stop()
 
+	def prev(self):
+		self.mpv.playlist_prev()
+
+	def next(self):
+		self.mpv.playlist_next()
+
+	def shuffle(self):
+		self.mpv.playlist_shuffle()
+
 	def set_volume(self, value):
 		ranged = max(0, min(100, value))
 		self.mpv.volume = ranged
@@ -60,6 +69,21 @@ def music_pause():
 @app.route('/api/music/stop', methods=['POST'])
 def music_stop():
 	player.stop()
+	return flask.jsonify({ 'ok': True })
+
+@app.route('/api/music/prev', methods=['POST'])
+def music_prev():
+	player.prev()
+	return flask.jsonify({ 'ok': True })
+
+@app.route('/api/music/next', methods=['POST'])
+def music_next():
+	player.next()
+	return flask.jsonify({ 'ok': True })
+
+@app.route('/api/music/shuffle', methods=['POST'])
+def music_shuffle():
+	player.shuffle()
 	return flask.jsonify({ 'ok': True })
 
 @app.route('/api/music/volume', methods=['POST'])
