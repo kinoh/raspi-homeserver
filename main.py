@@ -1,5 +1,9 @@
 import flask
+import dotenv
 import mpv
+import os
+
+dotenv.load_dotenv(verbose=True)
 
 class MpvPlayer():
 	def __init__(self):
@@ -92,4 +96,6 @@ def music_volume():
 	return flask.jsonify({ 'ok': True })
 
 if __name__ == '__main__':
-	app.run(host='0.0.0.0', port=443, ssl_context=('cert/server.crt', 'cert/server.key'), threaded=True, debug=True)
+	SSL_CERT = os.environ.get('SSL_CERT')
+	SSL_KEY = os.environ.get('SSL_KEY')
+	app.run(host='0.0.0.0', port=443, ssl_context=(SSL_CERT, SSL_KEY), threaded=True, debug=True)
