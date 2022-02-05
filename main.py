@@ -1,4 +1,5 @@
 import flask
+import datetime
 import dotenv
 import mpv
 import os
@@ -44,6 +45,7 @@ class MpvPlayer():
 			'volume': self.mpv.volume,
 			't': self.mpv.time_pos,
 			'paused': self.mpv.pause,
+			'timestamp': datetime.datetime.now(datetime.timezone.utc).isoformat(),
 		}
 
 player = MpvPlayer()
