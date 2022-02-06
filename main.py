@@ -50,12 +50,12 @@ class MpvPlayer():
 
 player = MpvPlayer()
 
-app = flask.Flask(__name__)
+app = flask.Flask(__name__, static_url_path='/', static_folder='web_build')
 app.config['JSON_AS_ASCII'] = False
 
 @app.route('/')
 def hello():
-	return flask.render_template('index.html')
+	return app.send_static_file('index.html')
 
 @app.route('/api/music/status', methods=['GET'])
 def music_status():

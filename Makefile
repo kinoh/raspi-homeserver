@@ -1,6 +1,15 @@
 include .env
 export
 
+.PHONY: build
+build:
+	cd web && npm run build
+
+.PHONY: deploy
+deploy:
+	rsync -a --exclude web $(PWD)/ $(PROD_HOST):$(PROD_PATH)
+	rsync -a $(PWD)/web/build/ $(PROD_HOST):$(PROD_PATH)/web_build/
+
 .PHONY: dev
 dev:
 	FLASK_APP=main FLASK_ENV=development flask run --host=0.0.0.0
