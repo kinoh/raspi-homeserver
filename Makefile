@@ -6,8 +6,14 @@ build:
 	cd web && npm run build
 
 .PHONY: deploy
-deploy:
+deploy: deploy-app deploy-web
+
+.PHONY: deploy-app
+deploy-app:
 	rsync -a --exclude web $(PWD)/ $(PROD_HOST):$(PROD_PATH)
+
+.PHONY: deploy-web
+deploy-web:
 	rsync -a $(PWD)/web/build/ $(PROD_HOST):$(PROD_PATH)/web_build/
 
 .PHONY: dev
