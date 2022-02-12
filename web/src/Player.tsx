@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
-import './App.css';
+import './Player.css';
 import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
 import IconButton from '@mui/material/IconButton';
 import LinearProgress from '@mui/material/LinearProgress';
 import Slider from '@mui/material/Slider';
@@ -55,7 +54,7 @@ function callAPI(path: string, method: 'GET' | 'POST', payload: object | null, s
   });
 }
 
-function App() {
+function Player() {
   const [logLines, setLogLines] = React.useState<string[]>([]);
   const [status, setStatus] = React.useState<PlayerStatus>({
     volume: 80,
@@ -166,59 +165,57 @@ function App() {
   }, [updateStatus]);
 
   return (
-    <Box className="App">
-      <Container maxWidth="sm" className="App-body">
-        <Box className="App-log" position="fixed">
-          <Stack direction="column" spacing={0} height="0" maxHeight="0">
-            {logLines.map((line, i) =>
-              <Box key={i}>
-                {line}
-              </Box>
-            )}
-          </Stack>
+    <>
+      <Box className="Player-log" position="fixed">
+        <Stack direction="column" spacing={0} height="0" maxHeight="0">
+          {logLines.map((line, i) =>
+            <Box key={i}>
+              {line}
+            </Box>
+          )}
+        </Stack>
+      </Box>
+      <Stack direction="column" spacing={0} height="100vh" justifyContent="center" position="relative" zIndex={1}>
+        <img src={thumbnailUrl} className="Player-thumbnail" alt="thumbnail" />
+        <Box sx={{ width: '100%' }}>
+          <LinearProgress variant="determinate" value={progress ?? 0} />
         </Box>
-        <Stack direction="column" spacing={0} height="100vh" justifyContent="center" position="relative" zIndex={1}>
-          <img src={thumbnailUrl} className="App-thumbnail" alt="thumbnail" />
-          <Box sx={{ width: '100%' }}>
-            <LinearProgress variant="determinate" value={progress ?? 0} />
-          </Box>
-          <p>
-            {status.title ?? '\u200b'}
-          </p>
-          <Stack direction="row" spacing={0} justifyContent="center" alignItems="center" flexWrap="wrap">
-            <IconButton color="primary" size="large" disabled={!!status.videoPath} onClick={handleLoadClick}>
-              <SendToMobileIcon />
-            </IconButton>
-            <IconButton color="primary" size="large" disabled={!status.videoPath} onClick={handlePlayClick}>
-              {status.paused
-                ? <PlayArrowIcon />
-                : <PauseIcon />
-              }
-            </IconButton>
-            <IconButton color="primary" size="large" disabled={!status.videoPath} onClick={handleStopClick}>
-              <StopIcon />
-            </IconButton>
-            <IconButton color="primary" size="large" disabled={!status.videoPath} onClick={handleSkipPreviousClick}>
-              <SkipPreviousIcon />
-            </IconButton>
-            <IconButton color="primary" size="large" disabled={!status.videoPath} onClick={handleSkipNextClick}>
-              <SkipNextIcon />
-            </IconButton>
-            <IconButton color="primary" size="large" disabled={!status.videoPath} onClick={handleShuffleClick}>
-              <ShuffleIcon />
-            </IconButton>
-            <Stack direction="row" spacing={0}>
-              <VolumeDownIcon sx={{ m: 1.5 }} />
-              <Box className="App-volumeSlider" display="flex" justifyContent="center" alignItems="center">
-                <Slider aria-label="Volume" value={status.volume} onChange={handleVolumeChange} />
-              </Box>
-              <VolumeUpIcon sx={{ m: 1.5 }} />
-            </Stack>
+        <p>
+          {status.title ?? '\u200b'}
+        </p>
+        <Stack direction="row" spacing={0} justifyContent="center" alignItems="center" flexWrap="wrap">
+          <IconButton color="primary" size="large" disabled={!!status.videoPath} onClick={handleLoadClick}>
+            <SendToMobileIcon />
+          </IconButton>
+          <IconButton color="primary" size="large" disabled={!status.videoPath} onClick={handlePlayClick}>
+            {status.paused
+              ? <PlayArrowIcon />
+              : <PauseIcon />
+            }
+          </IconButton>
+          <IconButton color="primary" size="large" disabled={!status.videoPath} onClick={handleStopClick}>
+            <StopIcon />
+          </IconButton>
+          <IconButton color="primary" size="large" disabled={!status.videoPath} onClick={handleSkipPreviousClick}>
+            <SkipPreviousIcon />
+          </IconButton>
+          <IconButton color="primary" size="large" disabled={!status.videoPath} onClick={handleSkipNextClick}>
+            <SkipNextIcon />
+          </IconButton>
+          <IconButton color="primary" size="large" disabled={!status.videoPath} onClick={handleShuffleClick}>
+            <ShuffleIcon />
+          </IconButton>
+          <Stack direction="row" spacing={0}>
+            <VolumeDownIcon sx={{ m: 1.5 }} />
+            <Box className="Player-volumeSlider" display="flex" justifyContent="center" alignItems="center">
+              <Slider aria-label="Volume" value={status.volume} onChange={handleVolumeChange} />
+            </Box>
+            <VolumeUpIcon sx={{ m: 1.5 }} />
           </Stack>
         </Stack>
-      </Container>
-    </Box>
+      </Stack>
+    </>
   );
 }
 
-export default App;
+export default Player;

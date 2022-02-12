@@ -1,0 +1,8 @@
+.Layout {
+  text-align: center;
+}
+
+.Layout-body {
+  min-height: 100vh;
+  font-size: calc(10px + 2vmin);
+}

@@ -1,0 +1,15 @@
+.Player-log {
+  font-size: 10px;
+  text-align: left;
+  opacity: 0.2;
+}
+
+.Player-thumbnail {
+  aspect-ratio: 16 / 9;
+  width: 100%;
+}
+
+.Player-volumeSlider {
+  width: 100px;
+  min-width: 2.5cm;
+}
