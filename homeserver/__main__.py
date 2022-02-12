@@ -87,11 +87,14 @@ def ir_status():
 	result = ir.status()
 	return flask.jsonify(result)
 
-@app.route('/api/ir/power', methods=['POST'])
+@app.route('/api/ir/status', methods=['POST'])
 @auth.login_required
-def ir_power():
-	ir.change_power(flask.request.json['on'])
-	return flask.jsonify({ 'ok': True })
+def ir_status_post():
+	new_status = ir.status()
+	new_status.update(flask.request.json)
+	ir.update(new_status)
+	result = ir.status()
+	return flask.jsonify(result)
 
 @app.route('/api/ir/temperature', methods=['POST'])
 @auth.login_required

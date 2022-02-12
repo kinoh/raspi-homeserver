@@ -1,6 +1,6 @@
 import './IR.css';
-import React from 'react';
-import { FormControlLabel, Grid, Radio, RadioGroup, Slider, Stack } from "@mui/material";
+import React, { useCallback, useEffect } from 'react';
+import { Alert, FormControlLabel, Grid, Radio, RadioGroup, Slider, Snackbar, Stack } from "@mui/material";
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 import ThermostatIcon from '@mui/icons-material/Thermostat';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
@@ -10,21 +10,52 @@ import SouthEastIcon from '@mui/icons-material/SouthEast';
 import WaterIcon from '@mui/icons-material/Water';
 
 interface IRStatus {
-  power: boolean;
+  power_on: boolean;
   mode: 'heater' | 'cooler' | 'dehumidifier';
   temperature: number;
   output: number;
   direction: number;
 };
 
+function callAPI(path: string, method: 'GET' | 'POST', payload: object | null, successCallback: (response: any) => void, errorCallback: (reason: any) => void) {
+  const request: RequestInit = {
+    method: method,
+    cache: 'no-cache',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  };
+  if (payload !== null) {
+    request.body = JSON.stringify(payload);
+  }
+  fetch(`/api/ir${path}`, request).then(response => {
+    if (response.status !== 200) {
+      throw new Error(`status ${response.status}`);
+    }
+    return response.json();
+  }).then(data => {
+    successCallback(data);
+  }).catch(e => {
+    errorCallback(e);
+  });
+}
+
 function IR() {
+  const [snackOpen, setSnackOpen] = React.useState(false);
+  const [snackMessage, setSnackMessage] = React.useState<string>('N/A');
   const [status, setStatus] = React.useState<IRStatus>({
-    power: true,
+    power_on: true,
     mode: 'heater',
     temperature: 19,
     output: 0,
     direction: 4,
   });
+  const [lastTimeout, setLastTimeout] = React.useState<NodeJS.Timeout | null>(null);
+
+  const showError = (message: string) => {
+    setSnackMessage(message);
+    setSnackOpen(true);
+  }
 
   const temperatureMarks = [
     {
@@ -73,13 +104,44 @@ function IR() {
     }
   ];
 
-  const handlePowerChange = (event: React.ChangeEvent, value: string) => {
+  const statusRef = React.useRef<() => IRStatus | null>(() => null);
+  statusRef.current = () => status;
+  const send = useCallback(() => {
+    const currentStatus = statusRef.current();
+    if (currentStatus === null) {
+      showError('status inaccessible');
+      return;
+    }
+    callAPI('/status', 'POST', {
+      ...currentStatus,
+      dehumidifier_level: (currentStatus.temperature < 20 ? 2 : (currentStatus.temperature < 25 ? 1 : 0)),
+    }, (response) => {
+      const d = currentStatus as {[index: string]: any}
+      if (Object.keys(d).some((key) => d[key] !== response[key])) {
+        showError('status mismatch');
+      }
+    }, (error) => {
+      showError(error.toString());
+    });
+  }, [statusRef]);
+
+  const reserveSend = useCallback(() => {
+    if (lastTimeout !== null) {
+      clearTimeout(lastTimeout);
+    }
+    const timeout = setTimeout(send, 400);
+    setLastTimeout(timeout);
+  }, [lastTimeout, send]);
+
+  const handlePowerChange = useCallback((event: React.ChangeEvent, value: string) => {
     setStatus({
       ...status,
-      power: value === 'on',
+      power_on: value === 'on',
     });
-  }
-  const handleModeChange = (event: React.ChangeEvent, value: string) => {
+    console.log(`power_on: ${value === 'on'}`);
+    reserveSend();
+  }, [status, reserveSend]);
+  const handleModeChange = useCallback((event: React.ChangeEvent, value: string) => {
     if (!['heater', 'cooler', 'dehumidifier'].includes(value)) {
       throw new Error('invalid mode value');
     }
@@ -87,25 +149,29 @@ function IR() {
       ...status,
       mode: value as any,
     });
-  }
-  const handleTemperatureChange = (event: Event, value: number | number[]) => {
+    reserveSend();
+  }, [status, reserveSend]);
+  const handleTemperatureChange = useCallback((event: Event, value: number | number[]) => {
     setStatus({
       ...status,
       temperature: value as number,
     });
-  }
-  const handleOutputChange = (event: Event, value: number | number[]) => {
+    reserveSend();
+  }, [status, reserveSend]);
+  const handleOutputChange = useCallback((event: Event, value: number | number[]) => {
     setStatus({
       ...status,
       output: value as number,
     });
-  }
-  const handleDirectionChange = (event: Event, value: number | number[]) => {
+    reserveSend();
+  }, [status, reserveSend]);
+  const handleDirectionChange = useCallback((event: Event, value: number | number[]) => {
     setStatus({
       ...status,
       direction: value as number,
     });
-  }
+    reserveSend();
+  }, [status, reserveSend]);
 
   const ModeIcon = {
     'heater': LocalFireDepartmentIcon,
@@ -121,7 +187,7 @@ function IR() {
       case 'dehumidifier':
         return 'primary';
     }
-  }
+  };
 
   const temperatureColor = (mode: string, value: number) => {
     switch (mode) {
@@ -131,84 +197,110 @@ function IR() {
       case 'dehumidifier':
         return value >= 25 ? 'info' : 'secondary';
     }
-  }
+  };
   const temperatureText = (value: number): string => {
     return `${value}℃`;
-  }
+  };
+
+  useEffect(() => {
+    callAPI('/status', 'GET', null, (response) => {
+      setStatus({
+        power_on: response['power_on'],
+        mode: response['mode'],
+        temperature: response['temperature'],
+        output: response['output'],
+        direction: response['direction'],
+      });
+    }, (error) => {
+      showError(error.toString());
+    });
+  }, []);
 
   return (
-    <Stack direction="column" spacing={0} height="100vh" justifyContent="center">
-      <Grid container columnSpacing={2} rowSpacing={10}>
-        <Grid item xs={6}>
-          <Stack spacing={2} direction="column" alignItems="center">
-            <PowerSettingsNewIcon color={status.power ? 'success' : 'disabled'} sx={{ fontSize: 100 }} />
-            <RadioGroup row defaultValue={status.power ? 'on' : 'off'} onChange={handlePowerChange}>
-              <FormControlLabel value="on" control={<Radio />} label="On" labelPlacement="bottom" />
-              <FormControlLabel value="off" control={<Radio />} label="Off" labelPlacement="bottom" />
-            </RadioGroup>
-          </Stack>
+    <>
+      <Snackbar
+        anchorOrigin={{vertical: 'top', horizontal: 'center'}}
+        open={snackOpen}
+        onClose={() => setSnackOpen(false)}
+      >
+        <Alert onClose={() => setSnackOpen(false)} severity="error" sx={{ width: '100%' }}>
+          {snackMessage}
+        </Alert>
+      </Snackbar>
+
+      <Stack direction="column" spacing={0} height="100vh" justifyContent="center">
+        <Grid container columnSpacing={2} rowSpacing={10}>
+          <Grid item xs={6}>
+            <Stack spacing={2} direction="column" alignItems="center">
+              <PowerSettingsNewIcon color={status.power_on ? 'success' : 'disabled'} sx={{ fontSize: 100 }} />
+              <RadioGroup row value={status.power_on ? 'on' : 'off'} onChange={handlePowerChange}>
+                <FormControlLabel value="on" control={<Radio />} label="On" labelPlacement="bottom" />
+                <FormControlLabel value="off" control={<Radio />} label="Off" labelPlacement="bottom" />
+              </RadioGroup>
+            </Stack>
+          </Grid>
+          <Grid item xs={6}>
+            <Stack spacing={2} direction="column" alignItems="center">
+              <ModeIcon color={status.power_on ? modeColor(status.mode) : 'disabled'} sx={{ fontSize: 100 }} />
+              <RadioGroup row value={status.mode} sx={{width: '90%', justifyContent: 'space-around'}} onChange={handleModeChange}>
+                <FormControlLabel value="heater" control={<Radio />} label="Heater" labelPlacement="bottom" sx={{margin: '0'}} />
+                <FormControlLabel value="cooler" control={<Radio />} label="Cooler" labelPlacement="bottom" sx={{margin: '0'}} />
+                <FormControlLabel value="dehumidifier" control={<Radio />} label="Dehum" labelPlacement="bottom" sx={{margin: '0'}} />
+              </RadioGroup>
+            </Stack>
+          </Grid>
+          <Grid item xs={6}>
+            <Stack spacing={2} direction="column" alignItems="center">
+              <ThermostatIcon color={status.power_on ? temperatureColor(status.mode, status.temperature) : 'disabled'} sx={{ fontSize: 100 }} />
+              <Slider
+                value={status.temperature}
+                min={16}
+                max={30}
+                getAriaValueText={temperatureText}
+                valueLabelFormat={temperatureText}
+                step={1}
+                valueLabelDisplay="on"
+                marks={temperatureMarks}
+                sx={{width: '80%'}}
+                onChange={handleTemperatureChange}
+              />
+            </Stack>
+          </Grid>
+          <Grid item xs={6}>
+            <Stack spacing={2} direction="column" alignItems="center">
+              <AirIcon color={status.power_on ? 'primary' : 'disabled'} sx={{ fontSize: 100 }} />
+              <Slider
+                value={status.output}
+                min={0}
+                max={3}
+                getAriaValueText={(x) => x.toString()}
+                step={1}
+                valueLabelDisplay="auto"
+                marks={outputMarks}
+                sx={{width: '80%'}}
+                onChange={handleOutputChange}
+              />
+            </Stack>
+          </Grid>
+          <Grid item xs={6}>
+            <Stack spacing={2} direction="column" alignItems="center">
+              <SouthEastIcon color={status.power_on ? 'primary' : 'disabled'}   sx={{ fontSize: 100 }} />
+              <Slider
+                value={status.direction}
+                min={0}
+                max={5}
+                getAriaValueText={(x) => x.toString()}
+                step={1}
+                valueLabelDisplay="auto"
+                marks={directionMarks}
+                sx={{width: '80%'}}
+                onChange={handleDirectionChange}
+              />
+            </Stack>
+          </Grid>
         </Grid>
-        <Grid item xs={6}>
-          <Stack spacing={2} direction="column" alignItems="center">
-            <ModeIcon color={status.power ? modeColor(status.mode) : 'disabled'} sx={{ fontSize: 100 }} />
-            <RadioGroup row defaultValue={status.mode} sx={{width: '90%', justifyContent: 'space-around'}} onChange={handleModeChange}>
-              <FormControlLabel value="heater" control={<Radio />} label="Heater" labelPlacement="bottom" sx={{margin: '0'}} />
-              <FormControlLabel value="cooler" control={<Radio />} label="Cooler" labelPlacement="bottom" sx={{margin: '0'}} />
-              <FormControlLabel value="dehumidifier" control={<Radio />} label="Dehum" labelPlacement="bottom" sx={{margin: '0'}} />
-            </RadioGroup>
-          </Stack>
-        </Grid>
-        <Grid item xs={6}>
-          <Stack spacing={2} direction="column" alignItems="center">
-            <ThermostatIcon color={status.power ? temperatureColor(status.mode, status.temperature) : 'disabled'} sx={{ fontSize: 100 }} />
-            <Slider
-              defaultValue={status.temperature}
-              min={16}
-              max={30}
-              getAriaValueText={temperatureText}
-              valueLabelFormat={temperatureText}
-              step={1}
-              valueLabelDisplay="on"
-              marks={temperatureMarks}
-              sx={{width: '80%'}}
-              onChange={handleTemperatureChange}
-            />
-          </Stack>
-        </Grid>
-        <Grid item xs={6}>
-          <Stack spacing={2} direction="column" alignItems="center">
-            <AirIcon color={status.power ? 'primary' : 'disabled'} sx={{ fontSize: 100 }} />
-            <Slider
-              defaultValue={status.output}
-              min={0}
-              max={3}
-              getAriaValueText={(x) => x.toString()}
-              step={1}
-              valueLabelDisplay="auto"
-              marks={outputMarks}
-              sx={{width: '80%'}}
-              onChange={handleOutputChange}
-            />
-          </Stack>
-        </Grid>
-        <Grid item xs={6}>
-          <Stack spacing={2} direction="column" alignItems="center">
-            <SouthEastIcon color={status.power ? 'primary' : 'disabled'}   sx={{ fontSize: 100 }} />
-            <Slider
-              defaultValue={status.direction}
-              min={0}
-              max={5}
-              getAriaValueText={(x) => x.toString()}
-              step={1}
-              valueLabelDisplay="auto"
-              marks={directionMarks}
-              sx={{width: '80%'}}
-              onChange={handleDirectionChange}
-            />
-          </Stack>
-        </Grid>
-      </Grid>
-    </Stack>
+      </Stack>
+    </>
   );
 }
 

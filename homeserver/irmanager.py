@@ -31,16 +31,34 @@ class IRManager():
 		self.model = json.loads(data, cls=MP501Decoder)
 
 	def status(self):
-		return self.model.__dict__
+		mode_dict = {
+			MP501.MODE_COOLER: 'cooler',
+			MP501.MODE_HEATER: 'heater',
+			MP501.MODE_DEHUMIDIFIER: 'dehumidifier',
+		}
+		return {
+			'power_on': self.model.power == MP501.POWER_ON,
+			'mode': mode_dict[self.model.mode],
+			'temperature': self.model.temperature,
+			'dehumidifier_level': 2 - self.model.dehumidifier_level,
+			'output': self.model.output,
+			'direction': self.model.direction,
+		}
 
 	def send(self):
 		playback(self.model.generate_code())
 		self._save()
 
-	def change_power(self, on: bool) -> None:
-		self.model.power = MP501.POWER_ON if on else MP501.POWER_OFF
-		self.send()
-
-	def change_temperature(self, value: int) -> None:
-		self.model.temperature = value
+	def update(self, status) -> None:
+		mode_dict = {
+			'cooler': MP501.MODE_COOLER,
+			'heater': MP501.MODE_HEATER,
+			'dehumidifier': MP501.MODE_DEHUMIDIFIER,
+		}
+		self.model.power = MP501.POWER_ON if status['power_on'] else MP501.POWER_OFF
+		self.model.mode = mode_dict[status['mode']]
+		self.model.temperature = status['temperature']
+		self.model.dehumidifier_level = 2 - status['dehumidifier_level']
+		self.model.output = status['output']
+		self.model.direction = status['direction']
 		self.send()
