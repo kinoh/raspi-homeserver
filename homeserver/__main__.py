@@ -59,6 +59,11 @@ def music_volume():
 	player.set_volume(flask.request.json['volume'])
 	return flask.jsonify({ 'ok': True })
 
+@app.route('/api/ir/status', methods=['GET'])
+def ir_status():
+	result = ir.status()
+	return flask.jsonify(result)
+
 @app.route('/api/ir/power', methods=['POST'])
 def ir_power():
 	ir.change_power(flask.request.json['on'])

@@ -30,6 +30,9 @@ class IRManager():
 			data = f.read()
 		self.model = json.loads(data, cls=MP501Decoder)
 
+	def status(self):
+		return self.model.__dict__
+
 	def send(self):
 		playback(self.model.generate_code())
 		self._save()
