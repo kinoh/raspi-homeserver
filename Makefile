@@ -1,3 +1,5 @@
+PYTHON_MODULE = homeserver
+
 include .env
 export
 
@@ -5,16 +7,21 @@ export
 build:
 	cd web && npm run build
 
+.PHONY: install
+install:
+	python3 -m venv venv
+	. venv/bin/activate && pip install -r requirements.txt
+
 .PHONY: deploy
 deploy: deploy-app deploy-web
 
 .PHONY: deploy-app
 deploy-app:
-	rsync -a --exclude web $(PWD)/ $(PROD_HOST):$(PROD_PATH)
+	rsync -a --exclude web --exclude .git $(PWD)/ $(PROD_HOST):$(PROD_PATH)
 
 .PHONY: deploy-web
 deploy-web:
-	rsync -a $(PWD)/web/build/ $(PROD_HOST):$(PROD_PATH)/web_build/
+	rsync -a $(PWD)/web/build/ $(PROD_HOST):$(PROD_PATH)/$(PYTHON_MODULE)/web_build/
 
 .PHONY: dev
 dev:
