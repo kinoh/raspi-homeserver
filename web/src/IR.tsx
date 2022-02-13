@@ -138,7 +138,6 @@ function IR() {
       ...status,
       power_on: value === 'on',
     });
-    console.log(`power_on: ${value === 'on'}`);
     reserveSend();
   }, [status, reserveSend]);
   const handleModeChange = useCallback((event: React.ChangeEvent, value: string) => {

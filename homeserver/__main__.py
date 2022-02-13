@@ -21,18 +21,12 @@ auth = flask_httpauth.HTTPBasicAuth()
 
 @auth.verify_password
 def verify_password(username, password):
-	print(flask.request.remote_addr)
 	if ipaddress.ip_address(flask.request.remote_addr).is_private:
 		return f'local:{username}'
 	USER_NAME = os.environ.get('USER_NAME')
 	USER_PASSWORD = os.environ.get('USER_PASSWORD')
 	if username == USER_NAME and werkzeug.security.check_password_hash(USER_PASSWORD, password):
 		return username
-
-@app.route('/')
-@auth.login_required
-def hello():
-	return app.send_static_file('index.html')
 
 @app.route('/api/music/status', methods=['GET'])
 @auth.login_required
@@ -96,11 +90,11 @@ def ir_status_post():
 	result = ir.status()
 	return flask.jsonify(result)
 
-@app.route('/api/ir/temperature', methods=['POST'])
+@app.route('/', defaults={'path': ''})
+@app.route('/<path>')
 @auth.login_required
-def ir_temperature():
-	ir.change_temperature(flask.request.json['temperature'])
-	return flask.jsonify({ 'ok': True })
+def catch_all(path):
+	return app.send_static_file('index.html')
 
 if __name__ == '__main__':
 	HOST = os.environ.get('HOST')
