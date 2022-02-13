@@ -94,6 +94,8 @@ def ir_status_post():
 @app.route('/<path>')
 @auth.login_required
 def catch_all(path):
+	if '.' in path:
+		return app.send_static_file(path)
 	return app.send_static_file('index.html')
 
 if __name__ == '__main__':
