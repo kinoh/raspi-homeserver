@@ -241,7 +241,7 @@ function IR() {
           <Grid item xs={6}>
             <Stack spacing={2} direction="column" alignItems="center">
               <ModeIcon color={status.power_on ? modeColor(status.mode) : 'disabled'} sx={{ fontSize: 100 }} />
-              <RadioGroup row value={status.mode} sx={{width: '90%', justifyContent: 'space-around'}} onChange={handleModeChange}>
+              <RadioGroup row value={status.mode} className="IR-modeRadioGroup" onChange={handleModeChange}>
                 <FormControlLabel value="heater" control={<Radio />} label="Heater" labelPlacement="bottom" sx={{margin: '0'}} />
                 <FormControlLabel value="cooler" control={<Radio />} label="Cooler" labelPlacement="bottom" sx={{margin: '0'}} />
                 <FormControlLabel value="dehumidifier" control={<Radio />} label="Dehum" labelPlacement="bottom" sx={{margin: '0'}} />
