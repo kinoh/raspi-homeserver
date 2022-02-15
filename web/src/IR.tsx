@@ -29,7 +29,7 @@ function callAPI(path: string, method: 'GET' | 'POST', payload: object | null, s
     request.body = JSON.stringify(payload);
   }
   fetch(`/api/ir${path}`, request).then(response => {
-    if (response.status !== 200) {
+    if (response.status < 200 || response.status > 299) {
       throw new Error(`status ${response.status}`);
     }
     return response.json();
