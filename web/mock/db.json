@@ -1,0 +1,40 @@
+{
+  "music_status": {
+    "title": "【歌ってみた】神っぽいな / ピノキオピー　#しぃラボ【葉加瀬冬雪/椎名唯華/にじさんじ】",
+    "path": "https://www.youtube.com/watch?v=bC-KaxM29W0",
+    "duration": 300,
+    "codec": "aac",
+    "audio_params": {},
+    "volume": 80,
+    "t": 100.2,
+    "paused": false,
+    "timestamp": "2020-12-03T04:05:06.789+00:00"
+  },
+  "music_play": {
+    "ok": true
+  },
+  "music_pause": {},
+  "music_stop": {
+    "ok": true
+  },
+  "music_prev": {
+    "ok": true
+  },
+  "music_next": {
+    "ok": true
+  },
+  "music_shuffle": {
+    "ok": true
+  },
+  "music_volume": {
+    "ok": true
+  },
+  "ir_status": {
+    "power_on": true,
+    "mode": "heater",
+    "temperature": 20,
+    "output": 1,
+    "direction": 2,
+    "dehumidifier_level": 1
+  }
+}
